@@ -15,6 +15,7 @@ import CalendarPage from "./pages/CalendarPage";
 import DocumentsPage from "./pages/DocumentsPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/documents" element={<DocumentsPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>

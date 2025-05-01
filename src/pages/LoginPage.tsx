@@ -12,11 +12,15 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,36 +31,56 @@ export default function LoginPage() {
       console.log("Login with:", { email, password });
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Show success toast
+      toast({
+        title: "Login successful",
+        description: "Welcome back to UniCommunity!",
+      });
+      
       // Redirect to portal after successful login
       window.location.href = "/portal";
     } catch (error) {
       console.error("Login error:", error);
+      toast({
+        title: "Login failed",
+        description: "Invalid email or password",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   return (
-    <div className="uni-container py-16 flex justify-center">
-      <Card className="w-full max-w-md">
+    <div className="py-16 flex justify-center bg-gradient-to-b from-purple-50 to-white">
+      <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Login</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center text-university-primary">Welcome Back</CardTitle>
           <CardDescription className="text-center">
-            Enter your email and password to access your account
+            Enter your credentials to access your university portal
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="m.example@university.edu"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+              <div className="relative">
+                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="m.example@university.edu"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10"
+                  required
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -68,13 +92,26 @@ export default function LoginPage() {
                   Forgot password?
                 </Link>
               </div>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10"
+                  required
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-10 px-3"
+                  onClick={togglePasswordVisibility}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+              </div>
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">

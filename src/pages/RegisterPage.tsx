@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Eye, EyeOff, Mail, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -38,6 +39,8 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { toast } = useToast();
+  const { signUp } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -73,23 +76,32 @@ export default function RegisterPage() {
     setIsLoading(true);
     
     try {
-      // In a real application, this would be an actual registration call
-      console.log("Register with:", formData);
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { error } = await signUp(
+        formData.email, 
+        formData.password, 
+        { 
+          full_name: formData.fullName,
+          student_id: formData.studentId,
+          department: formData.department
+        }
+      );
+      
+      if (error) {
+        throw error;
+      }
       
       toast({
         title: "Registration successful",
-        description: "Your account has been created. Please login.",
+        description: "Your account has been created. Please check your email for verification.",
       });
       
       // Redirect to login after successful registration
-      window.location.href = "/login";
-    } catch (error) {
+      navigate("/login");
+    } catch (error: any) {
       console.error("Registration error:", error);
       toast({
         title: "Registration failed",
-        description: "Could not create account. Please try again.",
+        description: error.message || "Could not create account. Please try again.",
         variant: "destructive",
       });
     } finally {

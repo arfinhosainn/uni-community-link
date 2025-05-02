@@ -6,6 +6,7 @@ import {
   Bell,
   BookOpen,
   Calendar,
+  LogOut,
   Menu,
   MessageSquare,
   Search,
@@ -14,13 +15,50 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
   
-  // Mock authentication state - replace with actual auth
-  const isAuthenticated = false;
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Signed out successfully",
+        description: "You have been signed out of your account.",
+      });
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast({
+        title: "Sign out failed",
+        description: "There was an issue signing out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Get user initials for avatar fallback
+  const getInitials = () => {
+    if (!user?.user_metadata?.full_name) return "U";
+    return user.user_metadata.full_name
+      .split(" ")
+      .map((n: string) => n[0])
+      .join("")
+      .toUpperCase();
+  };
 
   return (
     <header className="bg-white shadow-sm border-b sticky top-0 z-50">
@@ -56,14 +94,44 @@ export default function Navbar() {
             <Search className="h-5 w-5" />
           </button>
 
-          {isAuthenticated ? (
+          {user ? (
             <>
               <button className="p-2 text-university-dark hover:bg-university-light rounded-full">
                 <Bell className="h-5 w-5" />
               </button>
-              <Link to="/profile" className="p-2 text-university-dark hover:bg-university-light rounded-full">
-                <User className="h-5 w-5" />
-              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center ml-2 focus:outline-none">
+                    <Avatar className="h-9 w-9 cursor-pointer hover:ring-2 hover:ring-university-primary transition-all">
+                      <AvatarFallback className="bg-university-primary text-white">{getInitials()}</AvatarFallback>
+                    </Avatar>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    <div className="font-normal text-sm text-gray-500">Signed in as</div>
+                    <div className="font-medium">{user.user_metadata?.full_name || user.email}</div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile" className="cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>My Profile</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/portal" className="cursor-pointer">
+                      <BookOpen className="mr-2 h-4 w-4" />
+                      <span>Student Portal</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Sign out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           ) : (
             <div className="hidden sm:block">
@@ -138,13 +206,20 @@ export default function Navbar() {
             <BookOpen className="h-5 w-5 text-university-primary" />
             <span>Documents</span>
           </Link>
-          {!isAuthenticated && (
+          {!user ? (
             <div className="pt-3 flex flex-col space-y-2">
               <Button asChild>
                 <Link to="/login" onClick={() => setIsMenuOpen(false)}>Login</Link>
               </Button>
               <Button asChild variant="outline">
                 <Link to="/register" onClick={() => setIsMenuOpen(false)}>Register</Link>
+              </Button>
+            </div>
+          ) : (
+            <div className="pt-3">
+              <Button onClick={handleSignOut} variant="outline" className="w-full">
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign out
               </Button>
             </div>
           )}

@@ -3,6 +3,7 @@ import { ReactNode, useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -24,8 +25,12 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }, [loading, user, toast]);
 
   if (loading) {
-    // You could return a loading spinner here
-    return <div className="flex justify-center items-center h-[60vh]">Loading...</div>;
+    return (
+      <div className="flex flex-col justify-center items-center h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-university-primary mb-4" />
+        <p className="text-gray-600">Loading your profile...</p>
+      </div>
+    );
   }
 
   if (!user) {
